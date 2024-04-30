@@ -1,0 +1,225 @@
+;means comment section
+; comma and spaces mean yes in fluent
+
+;------- CHANGE THIS SECTION BELOW -------
+;This is the what you will name your simulation
+(define study "rearwingsim")
+
+;;factor (Don't touch)
+(define factor 1)
+
+;;CAD Filename that is being imported 
+(define fileName "rw")
+
+;;transcript (Don'touch)
+(ti-menu-load-string (format #f "file start-transcript ~a-~a-~02d.trn" fileName study factor))
+
+;Name selection : wing
+;Volume selection : enclosure, boi-near boi-far
+;Name selection on enclosure : inlet, outlet, walls, ground, symmetry
+
+;;define global parameters
+(define global-min 0.5)
+(define global-max 100)
+(define global-growth-rate 1.2)
+
+;;define proximity parameters
+(define min-prox-size 0.5)
+(define max-prox-size 4)
+(define prox-gap-cell 1)
+
+;;define wing curvature parameters
+(define min-face-size-wing 1)
+(define max-face-size-wing 5)
+(define norm-angle 9)
+
+;;define boi parameters
+(define boi-near 5)
+(define boi-far 15)
+
+;;define inflation parameters
+(define first-layer-height 0.046)
+(define number-of-layers 20)
+(define last-percent 20)
+
+(define first-layer-height-ground 0.046)
+(define number-of-layers-ground 10)
+;------- CHANGE THIS SECTION ABOVE -------
+
+;------- FLUENT MESHING -------
+
+;beta functions
+/beta-feature-access yes yes
+
+;;import cad faceting
+file import cad-options save-PMDB? yes
+(ti-menu-load-string (format #f "file import cad , ~a.agdb , , , mm" fileName))
+
+;;define global size-functions
+/size-functions set-global-controls global-min global-max global-growth-rate
+
+;;scope boi
+/scoped-sizing create boi-near boi object-faces-and-edges yes no boi-near* boi-near global-growth-rate
+/scoped-sizing create boi-far boi object-faces-and-edges yes no boi-far* boi-far global-growth-rate
+;;create sizing
+
+/scoped-sizing create edge-zones-wing proximity edge-zone yes no wing* min-prox-size max-prox-size global-growth-rate prox-gap-cell
+/scoped-sizing create face-zones-wing curvature face-zone yes no wing min-face-size-wing max-face-size-wing global-growth-rate norm-angle
+
+;;compute size field
+/scoped-sizing compute
+(ti-menu-load-string (format #f "file write-size-field ~a-~02d.sizing" fileName factor))
+
+;re-import
+/file import cad-options save-PMDB? no
+(ti-menu-load-string (format #f "file import cad-options tessellation cfd-surface-mesh yes ~a-~02d.sizing.sf" fileName factor))
+(ti-menu-load-string (format #f "file import cad , ~a.agdb , , , , mm yes" fileName))
+
+;;diagnostics quality improve
+/diagnostics face-connectivity fix-free-faces face-zones (list 'wing 'ground 'inlet 'outlet 'walls) stitch 0.05 1
+/diagnostics face-connectivity fix-multi-faces face-zones (list 'wing 'ground 'inlet 'outlet 'walls) all-above 20 20 5 1
+
+/diagnostics quality general-improve objects (en*) skewness 0.95 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.9 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.8 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.7 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.6 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.5 40 30 yes
+
+/diagnostics quality collapse objects (en*) skewness 0.99 40 30 no
+/diagnostics quality collapse objects (en*) skewness 0.98 40 30 no
+/diagnostics quality collapse objects (en*) skewness 0.97 40 30 no
+/diagnostics quality collapse objects (en*) skewness 0.96 40 30 no
+/diagnostics quality collapse objects (en*) skewness 0.95 40 30 no
+/diagnostics quality collapse objects (en*) skewness 0.9 40 30 no
+/diagnostics quality collapse objects (en*) skewness 0.85 40 30 no
+
+/diagnostics quality general-improve objects (en*) skewness 0.95 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.9 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.8 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.7 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.6 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.5 40 30 yes
+
+/diagnostics quality general-improve objects (en*) skewness 0.95 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.9 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.8 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.7 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.6 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.5 40 30 yes
+
+/diagnostics quality collapse objects (en*) skewness 0.8 40 30 no
+/diagnostics quality collapse objects (en*) skewness 0.75 40 30 no
+/diagnostics quality collapse objects (en*) skewness 0.7 40 30 no
+
+
+;;volume mesh
+/objects volumetric-regions compute en* no
+/objects vol-reg change-type en* (en*) fluid
+
+;;create volume mesh
+/mesh poly controls cell-sizing size-field
+/mesh scoped-prisms create prism-wing last-ratio first-layer-height number-of-layers last-percent enclosure:enclosure-enclosure fluid-regions selected-face-zones wing
+/mesh scoped-prisms create prism-ground last-ratio first-layer-height-ground number-of-layers-ground last-percent enclosure:enclosure-enclosure fluid-regions selected-face-zones ground
+
+;meshing poly-hexcore
+/mesh auto-mesh en* yes scoped pyramids poly-hexcore yes
+
+;;volume mesh diagnostics
+/mesh modify auto-node-move (*) (*) 0.99 50 120 yes 10
+/mesh modify auto-node-move (*) (*) 0.98 50 120 yes 10
+/mesh modify auto-node-move (*) (*) 0.96 50 120 yes 10
+/mesh modify auto-node-move (*) (*) 0.94 50 120 yes 10
+/mesh modify auto-node-move (*) (*) 0.92 50 120 yes 10
+/mesh modify auto-node-move (*) (*) 0.90 50 120 yes 10
+
+;;scale down
+/mesh manage scale-model 0.001 0.001 0.001
+
+;;prepare mesh to solve
+/mesh prepare-for-solve yes
+
+;write mesh for de-bugging
+;(ti-menu-load-string (format #f "file write-mesh mesh-~a-~a-~02d.msh.gz" fileName study factor))
+
+;;switch to solution
+/switch-to-solution-mode yes yes
+
+;------- FLUENT SOLVER -------
+
+;------- CHANGE THIS SECTION BELOW -------
+;;define variables
+(define air-speed 16.667)
+(define number-of-iterate 500)
+
+;;mesh study
+(define factor 1)
+
+;;define other (repeat names from start of script)
+(define fileName "fw")
+(define study "front wing sim")
+
+;------- CHANGE THIS SECTION ABOVE -------
+
+;;model type
+/define models viscous kw-sst? yes
+/define models viscous curvature-correction? yes
+
+;;message from fluent
+/display set nodewt-based-interp? no
+
+;;define zone types
+/define boundary-conditions modify-zones zone-type enclosure fluid
+/define boundary-conditions modify-zones zone-type inlet velocity-inlet
+/define boundary-conditions modify-zones zone-type outlet pressure-outlet
+/define boundary-conditions modify-zones zone-type symmetry symmetry
+
+/define boundary-conditions modify-zones zone-type walls symmetry
+
+;;define boundary conditions
+;/define boundary-conditions wall walls yes motion-bc-moving , , no , , air-speed 1 0 0 , , , , ,
+/define boundary-conditions wall ground yes motion-bc-moving , , no , , air-speed 1 0 0 , , , , ,
+/define boundary-conditions velocity-inlet inlet no no yes yes no air-speed no 0 no no yes 5 10
+/define boundary-conditions pressure-outlet outlet yes no 0 no yes no no yes 5 10 no yes no yes no
+
+;;set methods conditions
+/solve set p-v-coupling 24
+/solve set pseudo-transient yes yes 1 1 1
+/solve set warped-face-gradient-correction enable? yes yes
+/solve set high-order-term-relaxation enable yes
+/solve set discretization-scheme pressure 14
+/solve set discretization-scheme k 1
+/solve set discretization-scheme mom 1
+/solve set discretization-scheme omega 1
+
+;;drag and lift reports
+/solve report-definitions add lift-wing lift force-vector 0 -1 0 thread-ids (wing) quit
+/solve report-definitions add drag-wing drag force-vector -1 0 0 thread-ids (wing) quit
+/solve report-plots add lift-plot report-defs (lift-wing) quit
+/solve report-plots add drag-plot report-defs (drag-wing) quit
+/solve report-files add straightline-force frequency 1 report-defs (drag-wing) quit
+(ti-menu-load-string (format #f "/solve report-files edit straightline-force file-name report-~a-~a-~02d.csv" fileName study factor))
+
+;write before in case
+;(ti-menu-load-string (format #f "file write-case before-solved-~a-~a-~02d.cas.gz" fileName study factor))
+
+;;initialize
+;/solve initialize hyb-initialization
+;fmg-initialization
+/solve initialize initialize-flow
+/solve initialize fmg-initialization yes
+
+;;solve
+;/file read-macro benchmark.scm
+(benchmark '(iterate number-of-iterate))
+
+;;report
+(ti-menu-load-string (format #f "report forces wall-forces no (wing) 0 -1 0 yes downforce-~a-~a-~02d.csv" fileName study factor))
+(ti-menu-load-string (format #f "report summary yes fluent-solving-~a-~a-~02d-report.csv" fileName study factor))
+/report system proc-stats
+
+;;write
+(ti-menu-load-string (format #f "file write-case-data solved-~a-~a-~02d.cas.gz" fileName study factor))
+/file stop-transcript
+
+exit
