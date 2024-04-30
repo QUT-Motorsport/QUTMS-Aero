@@ -1,0 +1,325 @@
+;HPC SCRIPT TEMPLATE FOR HALF CAR SIMS
+;means comment section
+; comma and spaces mean yes in fluent
+
+;------- CHANGE THIS SECTION BELOW -------
+;Name the script and its purpose
+(define study "HALFCARAERO")
+/switch-to-meshing-mode yes
+
+;;factor
+(define factor 1)
+
+;;define other
+(define fileName "geom")
+;leave as mesh for the HPC script to detect input name
+
+;;transcript
+(ti-menu-load-string (format #f "file start-transcript ~a-~a-~02d.trn" fileName study factor))
+
+;Name selection : frontwing, rearwing, sidewing, body, rearwheel, frontwheel, diffuser, frontsuspension, frontupright, rearsuspension, rearupright
+;Volume selection : enclosure, boi-rw, boi-fw, boi-far
+;Name selection on enclosure : inlet, outlet, walls, ground, symmetry
+
+;;define global parameters
+(define global-min 0.5)
+(define global-max 100)
+(define global-growth-rate 1.2)
+
+;;define proximity parameters
+(define min-prox-size 0.5)
+(define max-prox-size 4)
+(define prox-gap-cell 1)
+
+;;define wing curvature parameters
+(define min-face-size-wing 1)
+(define max-face-size-wing 5)
+(define norm-angle 9)
+
+(define min-face-sizing-wheel 5)
+(define max-face-sizing-wheel 15)
+
+(define min-face-sizing-body 4)
+(define max-face-sizing-body 20)
+
+;;define boi parameters
+(define boi-fw 5)
+(define boi-rw 5)
+(define boi-wheel-f 5)
+(define boi-wheel-r 5)
+(define boi-far 15)
+
+;;define inflation parameters
+(define first-layer-height 0.046)
+(define number-of-layers 20)
+(define last-percent 20)
+
+(define first-layer-height-ground 0.046)
+(define number-of-layers-ground 10)
+ 
+;------- CHANGE THIS SECTION ABOVE -------
+
+;------- FLUENT MESHING -------
+
+;beta functions
+/beta-feature-access yes yes
+
+;;import cad faceting
+file import cad-options save-PMDB? yes
+(ti-menu-load-string (format #f "file import cad , ~a.agdb , , , mm" fileName))
+
+;;define global size-functions
+/size-functions set-global-controls global-min global-max global-growth-rate
+
+;;scope boi
+/scoped-sizing create boi-fw boi object-faces-and-edges yes no boi-fw* boi-fw global-growth-rate
+/scoped-sizing create boi-rw boi object-faces-and-edges yes no boi-rw* boi-rw global-growth-rate
+/scoped-sizing create boi-wheel-r boi object-faces-and-edges yes no boi-wheel-r* boi-wheel-r global-growth-rate
+/scoped-sizing create boi-wheel-f boi object-faces-and-edges yes no boi-wheel-f* boi-wheel-f global-growth-rate
+/scoped-sizing create boi-far boi object-faces-and-edges yes no boi-far* boi-far global-growth-rate
+;;create sizing
+/scoped-sizing create edge-zones-frontwing proximity edge-zone yes no frontwing* min-prox-size max-prox-size global-growth-rate prox-gap-cell
+/scoped-sizing create face-zones-frontwing curvature face-zone yes no frontwing min-face-size-wing max-face-size-wing global-growth-rate norm-angle
+
+/scoped-sizing create edge-zones-flap proximity edge-zone yes no flap* min-prox-size max-prox-size global-growth-rate prox-gap-cell
+/scoped-sizing create face-zones-flap curvature face-zone yes no flap min-face-size-wing max-face-size-wing global-growth-rate norm-angle
+
+/scoped-sizing create edge-zones-rearwing proximity edge-zone yes no rearwing* min-prox-size max-prox-size global-growth-rate prox-gap-cell
+/scoped-sizing create face-zones-rearwing curvature face-zone yes no rearwing min-face-size-wing max-face-size-wing global-growth-rate norm-angle
+
+/scoped-sizing create edge-zones-sidewing proximity edge-zone yes no sidewing* min-prox-size max-prox-size global-growth-rate prox-gap-cell
+/scoped-sizing create face-zones-sidewing curvature face-zone yes no sidewing min-face-size-wing max-face-size-wing global-growth-rate norm-angle
+
+/scoped-sizing create face-zones-frontwheel curvature face-zone yes no frontwheel min-face-sizing-wheel max-face-sizing-wheel global-growth-rate norm-angle
+/scoped-sizing create face-zones-rearwheel curvature face-zone yes no rearwheel min-face-sizing-wheel max-face-sizing-wheel global-growth-rate norm-angle
+
+/scoped-sizing create face-zones-body curvature face-zone yes no body* min-face-sizing-body max-face-sizing-body global-growth-rate norm-angle
+
+;added diffuser proximity for this test
+;changed diffuser sizing from body to wing
+/scoped-sizing create edge-zones-diffuser proximity edge-zone yes no diffuser* min-prox-size max-prox-size global-growth-rate prox-gap-cell
+/scoped-sizing create face-zones-diffuser curvature face-zone yes no diffuser min-face-sizing-body max-face-sizing-body global-growth-rate norm-angle
+
+;Suspension and upright Scoped sizing added
+
+/scoped-sizing create edge-zones-frontsuspension proximity edge-zone yes no frontsuspension* min-prox-size max-prox-size global-growth-rate prox-gap-cell
+/scoped-sizing create face-zones-frontsuspension curvature face-zone yes no frontsuspension* min-face-sizing-body max-face-sizing-body global-growth-rate norm-angle
+
+/scoped-sizing create edge-zones-rearsuspension proximity edge-zone yes no rearsuspension* min-prox-size max-prox-size global-growth-rate prox-gap-cell
+/scoped-sizing create face-zones-rearsuspension curvature face-zone yes no rearsuspension* min-face-sizing-body max-face-sizing-body global-growth-rate norm-angle
+
+;/scoped-sizing create edge-zones-frontupright proximity edge-zone yes no frontupright* min-prox-size max-prox-size global-growth-rate prox-gap-cell
+;/scoped-sizing create face-zones-frontupright curvature face-zone yes no frontupright* min-face-sizing-body max-face-sizing-body global-growth-rate norm-angle
+
+/scoped-sizing create edge-zones-rearupright proximity edge-zone yes no rearupright* min-prox-size max-prox-size global-growth-rate prox-gap-cell
+/scoped-sizing create face-zones-rearupright curvature face-zone yes no rearupright* min-face-sizing-body max-face-sizing-body global-growth-rate norm-angle
+
+;/scoped-sizing create face-zones-sidepod curvature face-zone yes no sidepod min-face-sizing-sidepod max-face-sizing-sidepod global-growth-rate norm-angle
+
+;;compute size field
+/scoped-sizing compute
+(ti-menu-load-string (format #f "file write-size-field ~a-~02d.sizing" fileName factor))
+
+;re-import
+/file import cad-options save-PMDB? no
+(ti-menu-load-string (format #f "file import cad-options tessellation cfd-surface-mesh yes ~a-~02d.sizing.sf" fileName factor))
+(ti-menu-load-string (format #f "file import cad , ~a.agdb.pmdb , , , , mm yes" fileName))
+
+;;diagnostics quality improve
+/diagnostics face-connectivity fix-free-faces face-zones (list 'body 'frontwing 'ground 'inlet 'rearupright 'outlet 'frontwheel 'rearwheel 'rearwing 'sidewing 'walls 'diffuser 'frontsuspension 'flap 'rearsuspension) stitch 0.05 1
+/diagnostics face-connectivity fix-multi-faces face-zones (list 'body 'frontwing 'ground 'inlet 'rearupright 'outlet 'frontwheel 'frontsuspension 'rearwheel 'rearsuspension 'rearwing 'sidewing 'walls 'flap 'diffuser) all-above 20 20 5 1
+/diagnostics quality general-improve objects (en*) skewness 0.95 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.9 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.8 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.7 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.6 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.5 40 30 yes
+
+/diagnostics quality collapse objects (en*) skewness 0.99 40 30 no
+/diagnostics quality collapse objects (en*) skewness 0.98 40 30 no
+/diagnostics quality collapse objects (en*) skewness 0.97 40 30 no
+/diagnostics quality collapse objects (en*) skewness 0.96 40 30 no
+/diagnostics quality collapse objects (en*) skewness 0.95 40 30 no
+/diagnostics quality collapse objects (en*) skewness 0.9 40 30 no
+/diagnostics quality collapse objects (en*) skewness 0.85 40 30 no
+
+/diagnostics quality general-improve objects (en*) skewness 0.95 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.9 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.8 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.7 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.6 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.5 40 30 yes
+
+/diagnostics quality general-improve objects (en*) skewness 0.95 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.9 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.8 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.7 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.6 40 30 yes
+/diagnostics quality general-improve objects (en*) skewness 0.5 40 30 yes
+
+/diagnostics quality collapse objects (en*) skewness 0.8 40 30 no
+/diagnostics quality collapse objects (en*) skewness 0.75 40 30 no
+/diagnostics quality collapse objects (en*) skewness 0.7 40 30 no
+
+;;volume mesh
+/objects volumetric-regions compute en* no
+/objects vol-reg change-type en* (en*) fluid
+
+;;create volume mesh
+/mesh poly controls cell-sizing size-field
+/mesh scoped-prisms create prism-frontwing last-ratio first-layer-height number-of-layers last-percent enclosure:enclosure-enclosure fluid-regions selected-face-zones frontwing
+/mesh scoped-prisms create prism-flap last-ratio first-layer-height number-of-layers last-percent enclosure:enclosure-enclosure fluid-regions selected-face-zones flap
+/mesh scoped-prisms create prism-rearwing last-ratio first-layer-height number-of-layers last-percent enclosure:enclosure-enclosure fluid-regions selected-face-zones rearwing
+;/mesh scoped-prisms create prism-sidewing last-ratio first-layer-height number-of-layers last-percent enclosure:enclosure-enclosure fluid-regions selected-face-zones sidewing
+/mesh scoped-prisms create prism-diffuser last-ratio first-layer-height number-of-layers last-percent enclosure:enclosure-enclosure fluid-regions selected-face-zones diffuser
+/mesh scoped-prisms create prism-body last-ratio first-layer-height number-of-layers last-percent enclosure:enclosure-enclosure fluid-regions selected-face-zones en*
+
+/mesh scoped-prisms create prism-ground last-ratio first-layer-height-ground number-of-layers-ground last-percent enclosure:enclosure-enclosure fluid-regions selected-face-zones ground
+/mesh scoped-prisms create prism-frontwheel last-ratio first-layer-height-ground number-of-layers-ground last-percent enclosure:enclosure-enclosure fluid-regions selected-face-zones frontwheel
+/mesh scoped-prisms create prism-rearwheel last-ratio first-layer-height-ground number-of-layers-ground last-percent enclosure:enclosure-enclosure fluid-regions selected-face-zones rearwheel
+
+;create volume mesh for uprights
+/mesh scoped-prisms create prism-rearupright last-ratio first-layer-height-ground number-of-layers-ground last-percent enclosure:enclosure-enclosure fluid-regions selected-face-zones rearupright
+;/mesh scoped-prisms create prism-frontupright last-ratio first-layer-height-ground number-of-layers-ground last-percent enclosure:enclosure-enclosure fluid-regions selected-face-zones frontupright
+
+
+;meshing poly-hexcore
+/mesh auto-mesh en* yes scoped pyramids poly-hexcore yes
+
+;;volume mesh diagnostics
+/mesh modify auto-node-move (*) (*) 0.99 50 120 yes 10
+/mesh modify auto-node-move (*) (*) 0.98 50 120 yes 10
+/mesh modify auto-node-move (*) (*) 0.96 50 120 yes 10
+/mesh modify auto-node-move (*) (*) 0.94 50 120 yes 10
+/mesh modify auto-node-move (*) (*) 0.92 50 120 yes 10
+/mesh modify auto-node-move (*) (*) 0.90 50 120 yes 10
+
+;;scale down
+/mesh manage scale-model 0.001 0.001 0.001
+
+;;prepare mesh to solve
+/mesh prepare-for-solve yes
+
+;write mesh for de-bugging
+(ti-menu-load-string (format #f "file write-mesh mesh-~a-~a-~02d.msh.gz" fileName study factor))
+
+;;switch to solution
+/switch-to-solution-mode yes yes
+
+;------- FLUENT SOLVER -------
+
+;------- CHANGE THIS SECTION BELOW -------
+;;define variables
+(define air-speed 16.667)
+(define number-of-iterate 500)
+
+;;mesh study
+(define factor 1)
+
+;;define other
+(define fileName "HALFCARAERO")
+(define study "HALFCARAERO")
+
+;front wheel parameters
+;(w=v/r)
+(define radius 0.203)
+(define wheel-rot-speed (/ air-speed radius))
+(define x-pos-wheel 0.6271)
+(define y-pos-wheel 0.081)
+(define z-pos-wheel 0.56)
+(define x-comp-wheel 0)
+(define y-comp-wheel 0)
+(define z-comp-wheel 1)
+
+(define wheelbase 1.514)
+(define x-pos-wheel-rear (+ x-pos-wheel wheelbase))
+
+
+;------- CHANGE THIS SECTION ABOVE -------
+
+;;model type
+/define models viscous kw-sst? yes
+/define models viscous curvature-correction? yes
+
+;;message from fluent
+/display set nodewt-based-interp? no
+
+;;define zone types
+/define boundary-conditions modify-zones zone-type enclosure fluid
+/define boundary-conditions modify-zones zone-type inlet velocity-inlet
+/define boundary-conditions modify-zones zone-type outlet pressure-outlet
+/define boundary-conditions modify-zones zone-type symmetry symmetry
+
+/define boundary-conditions modify-zones zone-type walls symmetry
+
+;;define boundary conditions
+;/define boundary-conditions wall walls yes motion-bc-moving , , no , , air-speed 1 0 0 , , , , ,
+/define boundary-conditions wall ground yes motion-bc-moving , , no , , air-speed 1 0 0 , , , , ,
+/define boundary-conditions velocity-inlet inlet no no yes yes no air-speed no 0 no no yes 5 10
+/define boundary-conditions pressure-outlet outlet yes no 0 no yes no no yes 5 10 no yes no yes no
+/define boundary-conditions wall frontwheel yes motion-bc-moving no no no yes no no 0 no 0.5 no wheel-rot-speed x-pos-wheel y-pos-wheel z-pos-wheel x-comp-wheel y-comp-wheel z-comp-wheel
+/define boundary-conditions wall rearwheel yes motion-bc-moving no no no yes no no 0 no 0.5 no wheel-rot-speed x-pos-wheel-rear y-pos-wheel z-pos-wheel x-comp-wheel y-comp-wheel z-comp-wheel
+
+;;set methods conditions
+/solve set p-v-coupling 24
+/solve set pseudo-transient yes yes 1 1 1
+/solve set warped-face-gradient-correction enable? yes yes
+/solve set high-order-term-relaxation enable yes
+/solve set discretization-scheme pressure 14
+/solve set discretization-scheme k 1
+/solve set discretization-scheme mom 1
+/solve set discretization-scheme omega 1
+
+;;drag and lift reports
+/solve report-definitions add lift-frontwing lift force-vector 0 -1 0 thread-ids (frontwing) quit
+/solve report-definitions add lift-rearwing lift force-vector 0 -1 0 thread-ids (rearwing) quit
+/solve report-definitions add lift-diffuser lift force-vector 0 -1 0 thread-ids (diffuser) quit
+/solve report-definitions add lift-body lift force-vector 0 -1 0 thread-ids (body) quit
+/solve report-definitions add drag-body drag force-vector 1 0 0 thread-ids (body) quit
+/solve report-plots add drag-plot report-defs (drag-body) quit
+/solve report-plots add lift-plot report-defs (lift-frontwing) quit
+;/solve report-plots add lift-plot report-defs (lift-rearwing) quit
+/solve report-files add straightline-force frequency 1 report-defs (lift-body) quit
+/solve report-files add straightline-force frequency 1 report-defs (drag-body) quit
+(ti-menu-load-string (format #f "/solve report-files edit straightline-force file-name report-~a-~a-~02d.csv" fileName study factor))
+
+;write before in case
+(ti-menu-load-string (format #f "file write-case before-solved-~a-~a-~02d.cas.gz" fileName study factor))
+
+;;initialize
+;/solve initialize hyb-initialization
+;fmg-initialization
+/solve initialize initialize-flow
+/solve initialize fmg-initialization yes
+
+;;solve
+;/file read-macro benchmark.scm
+(benchmark '(iterate number-of-iterate))
+
+;;report
+;;downforce report
+(ti-menu-load-string (format #f "report forces wall-forces no (frontwing) 0 -1 0 yes downforce-~a-~a-~02d.csv" fileName study factor))
+;(ti-menu-load-string (format #f "report forces wall-forces no (sidewing) 0 -1 0 yes downforce-~a-~a-~02d.csv" fileName study factor))
+(ti-menu-load-string (format #f "report forces wall-forces no (rearwing) 0 -1 0 yes downforce-~a-~a-~02d.csv" fileName study factor))
+;(ti-menu-load-string (format #f "report forces wall-forces no (towerwing) 0 -1 0 yes downforce-~a-~a-~02d.csv" fileName study factor))
+(ti-menu-load-string (format #f "report forces wall-forces no (diffuser) 0 -1 0 yes downforce-~a-~a-~02d.csv" fileName study factor))
+(ti-menu-load-string (format #f "report forces wall-forces no (flap rearupright rearsuspension frontsuspension diffuser frontwheel rearwheel body rearwing frontwing) 0 -1 0 yes downforce-~a-~a-~02d.csv" fileName study factor))
+
+;drag report
+(ti-menu-load-string (format #f "report forces wall-forces no (frontwing) 1 0 0 yes dragforce-~a-~a-~02d.csv" fileName study factor))
+(ti-menu-load-string (format #f "report forces wall-forces no (rearwing) 1 0 0 yes dragforce-~a-~a-~02d.csv" fileName study factor))
+;(ti-menu-load-string (format #f "report forces wall-forces no (sidewing) 1 0 0 yes dragforce-~a-~a-~02d.csv" fileName study factor))
+;(ti-menu-load-string (format #f "report forces wall-forces no (towerwing) 1 0 0 yes dragforce-~a-~a-~02d.csv" fileName study factor))
+(ti-menu-load-string (format #f "report forces wall-forces no (diffuser) 1 0 0 yes dragforce-~a-~a-~02d.csv" fileName study factor))
+(ti-menu-load-string (format #f "report forces wall-forces no (body) 1 0 0 yes dragforce-~a-~a-~02d.csv" fileName study factor))
+(ti-menu-load-string (format #f "report forces wall-forces no (flap rearupright rearsuspension frontsuspension diffuser frontwheel rearwheel body rearwing frontwing) 1 0 0 yes dragforce-~a-~a-~02d.csv" fileName study factor))
+
+;projected area (beta suppress for new sims)
+(ti-menu-load-string (format #f "report projected-surface-area (flap rearupright rearsuspension frontsuspension diffuser frontwheel rearwheel body rearwing frontwing) 0.1489 1 0 0 projected-area-~a-~a-~02d.csv"fileName study factor))
+/report system proc-stats
+
+;;write
+(ti-menu-load-string (format #f "file write-case-data solved-~a-~a-~02d.cas.gz" fileName study factor))
+/file stop-transcript
+
+exit
