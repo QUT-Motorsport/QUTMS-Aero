@@ -1,0 +1,253 @@
+/file/set-tui-version "21.1"
+; Fluent Input File
+;----------------
+; start transcript file [checked]
+/file/read-case-data solved-Undertray-VNUMBER-Undertray-VNUMBER-01.cas.gz
+
+; Create cutting planes numbers (x y z [distance offset])
+/display/surface/plane-slice z-25cm 0 0 1 0.25
+/display/surface/plane-slice z-45cm 0 0 1 0.45
+/display/surface/plane-slice z-50cm 0 0 1 0.5
+/display/surface/plane-slice z-55cm 0 0 1 0.55
+/display/surface/plane-slice y-6cm 0 1 0 0.06
+/display/surface/plane-slice y-4cm 0 1 0 0.04
+
+;plane pressure contours pressure contour 
+/display/objects create contour pressure-symmetry filled? yes range-option auto-range-off minimum -200 maximum 100 clip-to-range? no q surface-list symmetry () field pressure node-values? yes q
+/display/objects create contour pressure-z-25cm filled? yes range-option auto-range-off minimum -200 maximum 100 clip-to-range? no q surface-list z-25cm () field pressure node-values? yes q
+/display/objects create contour pressure-z-45cm filled? yes range-option auto-range-off minimum -200 maximum 100 clip-to-range? no q surface-list z-45cm () field pressure node-values?
+/display/objects create contour pressure-z-50cm filled? yes range-option auto-range-off minimum -200 maximum 100 clip-to-range? no q surface-list z-50cm () field pressure node-values? yes q
+/display/objects create contour pressure-z-55cm filled? yes range-option auto-range-off minimum -200 maximum 100 clip-to-range? no q surface-list z-55cm () field pressure node-values? yes q
+/display/objects create contour pressure-y-6cm filled? yes range-option auto-range-off minimum -200 maximum 100 clip-to-range? no q surface-list y-6cm () field pressure node-values? yes q
+/display/objects create contour pressure-y-4cm filled? yes range-option auto-range-off minimum -200 maximum 100 clip-to-range? no q surface-list y-4cm () field pressure node-values? yes q
+/display/objects create contour pressure-total-y-4cm filled? yes range-option auto-range-off minimum 0 maximum 50 clip-to-range? no q surface-list y-4cm () field total-pressure node-values? yes q
+/display/objects create contour pressure-total-y-6cm filled? yes range-option auto-range-off minimum 0 maximum 50 clip-to-range? no q surface-list y-6cm () field total-pressure node-values? yes q
+
+:velocity contours 
+/display/objects create contour velocity-symmetry filled? yes range-option auto-range-off minimum 0 maximum 30 clip-to-range? no q surface-list symmetry () field velocity node-values? yes q
+/display/objects create contour velocity-z-25cm filled? yes range-option auto-range-off minimum 0 maximum 30 clip-to-range? no q surface-list z-25cm () field velocity node-values? yes q
+/display/objects create contour velocity-z-45cm filled? yes range-option auto-range-off minimum 0 maximum 30 clip-to-range? no q surface-list z-45cm () field velocity node-values? yes q
+/display/objects create contour velocity-z-50cm filled? yes range-option auto-range-off minimum 0 maximum 30 clip-to-range? no q surface-list z-50cm () field velocity node-values? yes q
+/display/objects create contour velocity-z-55cm filled? yes range-option auto-range-off minimum 0 maximum 30 clip-to-range? no q surface-list z-55cm () field velocity node-values? yes q
+/display/objects create contour velocity-y-6cm filled? yes range-option auto-range-off minimum 0 maximum 30 clip-to-range? no q surface-list y-6cm () field velocity node-values? yes q
+/display/objects create contour velocity-y-4cm filled? yes range-option auto-range-off minimum 0 maximum 30 clip-to-range? no q surface-list y-4cm () field velocity node-values? yes q
+
+;-------------------We are post processing these flat planes before we add symmetry to the half car model---------------------
+; target function uses a general vector (x y z) and centers the camera view around this point
+
+; Save image z-25cm-pressure (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display pressure-z-25cm
+/display/views/restore-view/front
+/display/views/camera/target 1 1 0
+/display/views/camera/zoom-camera 4.5 
+/display/save-picture pressure-z-25cm.jpg
+
+; Save image z-25cm-pressure (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display velocity-z-25cm
+/display/views/restore-view/front
+/display/views/camera/target 1 1 0
+/display/views/camera/zoom-camera 4.5 
+/display/save-picture velocity-z-25cm.jpg
+
+; Save image mid-diffuser-pressure (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display pressure-z-45cm
+/display/views/restore-view/front
+/display/views/camera/target 1 1 0
+/display/views/camera/zoom-camera 4.5 
+/display/save-picture pressure-z-45cm.jpg
+
+; Save image z-25cm-pressure (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display velocity-z-45cm
+/display/views/restore-view/front
+/display/views/camera/target 1 1 0
+/display/views/camera/zoom-camera 4.5 
+/display/save-picture velocity-z-45cm.jpg
+
+; Save image mid-diffuser-pressure (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display pressure-symmetry
+/display/views/restore-view/front
+/display/views/camera/target 1 1 0
+/display/views/camera/zoom-camera 4.5 
+/display/save-picture pressure-symmetry.jpg
+
+; Save image z-25cm-pressure (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display velocity-symmetry
+/display/views/restore-view/front
+/display/views/camera/target 1 1 0
+/display/views/camera/zoom-camera 4.5 
+/display/save-picture velocity-symmetry.jpg
+
+; Save image pressure-z-50cm (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display pressure-z-50cm
+/display/views/restore-view/front
+/display/views/camera/target 1 1 0
+/display/views/camera/zoom-camera 4.5 
+/display/save-picture pressure-z-50cm.jpg
+
+; Save image z-25cm-pressure (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display velocity-z-50cm
+/display/views/restore-view/front
+/display/views/camera/target 1 1 0
+/display/views/camera/zoom-camera 4.5 
+/display/save-picture velocity-z-50cm.jpg
+
+; Save image pressure-z-55cm (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display pressure-z-55cm
+/display/views/restore-view/front
+/display/views/camera/target 1 1 0
+/display/views/camera/zoom-camera 4.5
+/display/save-picture pressure-z-55cm.jpg
+
+; Save image z-25cm-pressure (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display velocity-z-55cm
+/display/views/restore-view/front
+/display/views/camera/target 1 1 0
+/display/views/camera/zoom-camera 4.5 
+/display/save-picture velocity-z-55cm.jpg
+
+:----------adding symmetry for bottom planes----------
+/display set mirror-zones symmetry q q
+
+; Save image pressure-z-55cm (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display pressure-y-4cm
+/display/views/restore-view/top
+/display/views/camera/target 1.5 0.5 0
+/display/views/camera/zoom-camera 4 
+/display/save-picture pressure-y-4cm.jpg
+
+; Save image pressure-z-55cm (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display pressure-total-y-4cm
+/display/views/restore-view/top
+/display/views/camera/target 1.5 0.5 0
+/display/views/camera/zoom-camera 4 
+/display/save-picture pressure-total-y-4cm.jpg
+
+; Save image pressure-z-55cm (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display velocity-y-4cm
+/display/views/restore-view/top
+/display/views/camera/target 1.5 0.5 0
+/display/views/camera/zoom-camera 4 
+/display/save-picture velocity-y-4cm.jpg
+
+; Save image pressure-z-55cm (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display pressure-y-6cm
+/display/views/restore-view/top
+/display/views/camera/target 1.5 0.5 0
+/display/views/camera/zoom-camera 4 
+/display/save-picture pressure-y-6cm.jpg
+
+; Save image pressure-z-55cm (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display pressure-total-y-6cm
+/display/views/restore-view/top
+/display/views/camera/target 1.5 0.5 0
+/display/views/camera/zoom-camera 4 
+/display/save-picture pressure-total-y-6cm.jpg
+
+; Save image pressure-z-55cm (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display velocity-y-6cm
+/display/views/restore-view/top
+/display/views/camera/target 1.5 0.5 0
+/display/views/camera/zoom-camera 4 
+/display/save-picture velocity-y-6cm.jpg
+
+;----------creating scene for avs file-------------
+
+;creating a rake for pathlines coordinates are in the structure point 1 (x,y,z) point 2 (x,y,z)
+/surface line-surface front-rake -0.7 0.03 0.75 -0.7 0.03 0 q
+/surface line-surface test-rake -0.5 0.3 0.75 -0.5 0.3 0 q
+/surface line-surface frontwing-rake -0.5 0.15 0.75 -0.5 0.15 0 q
+/surface line-surface keel-rake 0.01633031 0.1394895 0.1525852 0.01633031 0.1394895 0 q
+
+
+;Full car pressure contour
+/display/objects create contour pressure-car filled? yes range-option auto-range-off minimum -200 maximum 100 clip-to-range? no q surface-list towerwing flap rearupright rearsuspension frontsuspension diffuser frontwheel rearwheel body rearwing frontwing () field pressure node-values? yes q
+
+;Wall shear contour
+display/objects create contour wall-shear-stress-car filled? yes range-option auto-range-off minimum 0 maximum 10 clip-to-range? no q surface-list towerwing flap rearupright rearsuspension frontsuspension diffuser frontwheel rearwheel body rearwing frontwing () field wall node-values? yes q
+
+;Velocity pathlines beta
+/display/objects create pathlines fluid-velocity-front-rake range clip-to-range max-value 35 min-value 0 q surfaces-list front-rake () step 5000 field x-velocity q q
+/display/objects create pathlines fluid-velocity-keel-rake range clip-to-range max-value 35 min-value 0 q surfaces-list keel-rake () step 5000 field x-velocity q q
+/display/objects create pathlines fluid-velocity-test-rake range clip-to-range max-value 35 min-value 0 q surfaces-list test-rake () step 5000 field x-velocity q q
+/display/objects create pathlines fluid-velocity-frontwing-rake range clip-to-range max-value 35 min-value 0 q surfaces-list frontwing-rake () step 5000 field x-velocity q q
+
+
+; Create scene
+/display/objects create scene scene-1 graphics-objects add pressure-car q add fluid-velocity-front-rake q add fluid-velocity-keel-rake q add wall-shear-stress-car q add fluid-velocity-frontwing-rake q add fluid-velocity-test-rake q fluid-velocity-test-rake q q q
+
+;-----------------------creating file outputs-----------------------------------------
+
+
+; Save image diffuser-pressure (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display pressure-car
+/display/views/restore-view/bottom
+/display/views/auto-scale
+/display/save-picture diffuser-pressure.jpg
+
+; Save wall shear (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display wall-shear-stress-car
+/display/views/restore-view/bottom
+/display/views/auto-scale
+/display/save-picture diffuser-wall-shear.jpg
+
+; Save front view of car (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display pressure-car
+/display/views/restore-view/left
+/display/views/auto-scale
+/display/save-picture front-view.jpg
+
+; Save side view of car (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display pressure-car
+/display/views/restore-view/front
+/display/views/auto-scale
+/display/save-picture side-view.jpg
+
+; Save top view of car (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display pressure-car
+/display/views/restore-view/top
+/display/views/auto-scale
+/display/save-picture top-view.jpg
+
+; Save back view of car (note, using standard restore-view options back,bottom,front,isometric,left,right,top)
+/display/set/picture/driver/jpeg
+/display/objects/display pressure-car
+/display/views/restore-view/right
+/display/views/auto-scale
+/display/save-picture back-view.jpg
+
+; Save pressure-car with specific view position (position in Fluent, then use the command /display/views/camera position and write down the defauls as they are the current poisition)
+/display/set/picture/driver/jpeg
+/display/objects/display pressure-car
+/display/views/restore-view/isometric
+/display/views/camera/position -7.866335 5.516932 3.957932
+/display/views/camera/up-vector 0 1 0
+/display/views/auto-scale
+/display/views/camera/zoom-camera 0.7
+/display/save-picture Car-pressure-contour.jpg
+
+; Save scene as avz
+/display/set/picture/driver/avz
+/display/objects/display scene-1
+/display/save-picture allcontourresults1.avz
+/exit yes
