@@ -1,5 +1,5 @@
 ## File Path
-File_Path = 
+File_Path = ~n11538554/cfd/python/halfcar/geom.pmdb
 
 
 
@@ -25,7 +25,7 @@ workflow.InitializeWorkflow(WorkflowType=r'Watertight Geometry')
 print("Meow - Workflow Selection Success")
 
 ## Import Geometry
-workflow.TaskObject['Import Geometry'].Arguments.set_state({r'FileName': r'C:/pythonscripting/wingtest/wingtest.scdoc',r'ImportCadPreferences': {r'MaxFacetLength': 0,},r'LengthUnit': r'mm',})
+workflow.TaskObject['Import Geometry'].Arguments.set_state({r'FileName': r'File_Path',r'ImportCadPreferences': {r'MaxFacetLength': 0,},r'LengthUnit': r'mm',})
 workflow.TaskObject['Import Geometry'].Execute()
 print("Meow Meow - Geometry input success")
 
@@ -37,32 +37,32 @@ Named_Selections = ['frontwing', 'rearwing', 'flap', 'sidewing', 'body', 'rearwh
 ## Curvature Sizings
 Norm_Angle = 9
 
-Front_Wing_Max = 
-Front_Wing_Min = 
+Front_Wing_Max = 5
+Front_Wing_Min = 1
 
-Rear_Wing_Max = 
-Rear_Wing_Min = 
+Rear_Wing_Max = 5
+Rear_Wing_Min = 1
 
-Flap_Max = 
-Flap_Min = 
-
+Flap_Max = 5
+Flap_Min = 1
+"""
 Sidewing_Max =
 Sidewing_Min = 
+"""
+Body_Max = 20
+Body_Min = 4
 
-Body_Max = 
-Body_Min = 
+Wheel_Max = 15
+Wheel_Min = 5
 
-Wheel_Max = 
-Wheel_Min = 
+Diffuser_Max = 4
+Diffuser_Min = 20
 
-Diffuser_Max = 
-Diffuser_Min = 
+Suspension_Max = 20
+Suspension_Min = 4
 
-Suspension_Max = 
-Suspension_Min = 
-
-Rear_Upright_Max = 
-Rear_Upright_Min = 
+Rear_Upright_Max = 20
+Rear_Upright_Min = 4
 
 Tyre_Squash_Max = 
 Tyre_Squash_Min = 
@@ -71,17 +71,17 @@ Rollhoop_Max =
 Rollhoop_Min = 
 
 ## Proximity Sizing
-Proximity_Max = 
-Proximity_Min =
+Proximity_Max = 4
+Proximity_Min = 0.5
 
-Global_Max = 
-Global_Min = 
+Global_Max = 100
+Global_Min = 0.5
 
 ## Body of Influence 
-Boi_Front_Wing = 
-Boi_Rear_Wing =
-Boi_Wheel = 
-Boi_Far = 
+Boi_Front_Wing = 5 
+Boi_Rear_Wing = 5
+Boi_Wheel = 5
+Boi_Far = 15
 
 # Front Wing
 if 'frontwing' in Named_Selections:
@@ -249,6 +249,7 @@ meshing.tui.mesh.modify.auto_improve_warp('enclosure-enclosure', 'enclosure-encl
 ## Write and Save Mesh as Case File
 ...
 
+
 ## Change to Solver
 meshing.switch_to_solver()
 
@@ -257,7 +258,49 @@ solver.setup.models.viscous.model = "k-omega"
 solver.setup.models.viscous.k_omega_model = "sst"
 solver.setup.models.viscous.options.curvature_correction = True
 
+## Boundary Conditions
+# Inlet at 60km/hr (16.6667 m/s)
+air_speed = 16.6667
 
+solver.setup.boundary_conditions.velocity_inlet['inlett'] = {"momentum" : {"velocity" : {"value" : air_speed}}}
+
+# Moving ground
+solver.setup.boundary_conditions.wall['groundd'] = {"momentum" : {"components" : False, "wall_translation" : [0, 0, 1], "vmag" : 16.6667, "rotating" : False, "relative" : False, "motion_bc" : "Moving Wall"}}
+
+# Wheel Rotation
+
+frontwheelx = 0.5326593
+frontwheely = 0.0867102
+frontwheelz = -1.7203693
+
+rearwheelx = frontwheelx + 1.514
+rearwheely = frontwheely
+rearwheelz = frontwheelz
+
+rot_speed = (air_speed/0.203)
+solver.setup.boundary_conditions.wall['frontwheel'] = {"momentum" : {"rotation_axis_direction" : [0, 0, 1], "rotation_axis_origin" : [frontwheelx, frontwheely, frontwheelz], "omega" : rot_speed, "components" : False, "rotating" : True, "relative" : False, "motion_bc" : "Moving Wall"}}
+
+
+## Convert "Walls" From a Wall Boundary to a symmetry boundary
+solver.tui.define.boundary_conditions.modify_zones.zone_type('wallss', 'symmetry')
+
+
+
+## Solution Methods
+
+# Spatial Discretization
+solver.solution.methods.discretization_scheme = {"pressure" : "second-order", "k" : "second-order-upwind", "omega" : "second-order-upwind", "mom" : "second-order-upwind"}
+
+# Warped Face Gradient Correction
+solver.solution.methods.warped_face_gradient_correction.enable = True
+solver.solution.methods.warped_face_gradient_correction.mode = "fast"
+
+
+## Hybrid Initialize
+solver.solution.initialization.hybrid_initialize()
+
+## Run Solver (500 iterations)
+solver.solution.run_calculation.iterate(iter_count = 500)
 
 
 
