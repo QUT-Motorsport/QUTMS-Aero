@@ -1,5 +1,5 @@
 ## File Path
-File_Path = ~n11538554/cfd/python/halfcar/geom.pmdb
+File_Path = '~n11538554/cfd/python/halfcar/geom.pmdb'
 
 
 
@@ -45,10 +45,10 @@ Rear_Wing_Min = 1
 
 Flap_Max = 5
 Flap_Min = 1
-"""
-Sidewing_Max =
-Sidewing_Min = 
-"""
+
+#Sidewing_Max =
+#Sidewing_Min = 
+
 Body_Max = 20
 Body_Min = 4
 
@@ -64,11 +64,11 @@ Suspension_Min = 4
 Rear_Upright_Max = 20
 Rear_Upright_Min = 4
 
-Tyre_Squash_Max = 
-Tyre_Squash_Min = 
+#Tyre_Squash_Max = 
+#Tyre_Squash_Min = 
 
-Rollhoop_Max = 
-Rollhoop_Min = 
+#Rollhoop_Max = 
+#Rollhoop_Min = 
 
 ## Proximity Sizing
 Proximity_Max = 4
@@ -235,10 +235,10 @@ print("Meow Meow, Meow, Meow! - Boundary Layer Creation Complete")
 
 ## Generate Volume Mesh
 
-Hex_Max = 
-Hex_Min = 
+#Hex_Max = 
+#Hex_Min = 
 
-workflow.TaskObject['Generate the Volume Mesh'].Arguments.set_state({r'VolumeFill': r'poly-hexcore',r'VolumeFillControls': {r'HexMaxCellLength': Hex_Max,r'HexMinCellLength': Hex_Min,},r'VolumeMeshPreferences': {r'ShowVolumeMeshPreferences': True,},})
+workflow.TaskObject['Generate the Volume Mesh'].Arguments.set_state({r'VolumeFill': r'poly-hexcore',})
 workflow.TaskObject['Generate the Volume Mesh'].Execute()
 print("Meow - Volume Mesh Created")
 
@@ -301,6 +301,8 @@ solver.solution.initialization.hybrid_initialize()
 
 ## Run Solver (500 iterations)
 solver.solution.run_calculation.iterate(iter_count = 500)
+
+
 
 
 
